@@ -2,11 +2,15 @@
 
 import * as React from 'react';
 
-export default class App extends React.Component<{}, {}> {
+interface IAppProps {
+    children?: Array<React.ReactElement<{}>>;
+}
+
+export default class App extends React.Component<IAppProps, {}> {
     public render(): React.ReactElement<{}> {
         return (
             <div>
-                APP!
+                {this.props.children}
             </div>
         );
     }

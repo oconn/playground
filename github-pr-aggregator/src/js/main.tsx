@@ -2,14 +2,18 @@
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-// import {Provider} from 'react-redux';
+import {Provider} from 'react-redux';
 import AppRouter from './app-router';
-// import configureStore from './stores/main';
+import configureStore from './stores/main';
 
-class App extends React.Component<{}, {}> {
+const store: any = configureStore();
+
+class Main extends React.Component<{}, {}> {
     public render(): React.ReactElement<{}> {
-        return <AppRouter />;
+        return <Provider store={store}>
+            <AppRouter />
+        </Provider>;
     }
 }
 
-ReactDOM.render(<App />, document.getElementById('app'));
+ReactDOM.render(<Main />, document.getElementById('app'));
