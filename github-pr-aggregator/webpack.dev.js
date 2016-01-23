@@ -4,16 +4,16 @@ import webpack from 'webpack';
 export default {
     debug: true,
     devtool: 'eval',
-    entry: ['webpack-hot-middleware/client', './src/js/main.tsx'],
+    entry: ['webpack-hot-middleware/client', './src/js/main.js'],
     module: {
         preLoaders: [{
-            test: /\.tsx?$/,
-            loader: 'tslint',
+            test: /\.js?$/,
+            loader: 'eslint',
             include: path.join(__dirname, 'src')
         }],
         loaders: [{
-            test: /\.tsx?$/,
-            loaders: ['babel', 'ts'],
+            test: /\.js?$/,
+            loaders: ['babel'],
             include: path.join(__dirname, 'src')
         }]
     },
@@ -24,10 +24,15 @@ export default {
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin()
+        new webpack.NoErrorsPlugin(),
+        new webpack.DefinePlugin({
+            'process.env': {
+                NODE_ENV: JSON.stringify('development')
+            }
+        })
     ],
     resolve: {
         root: [path.resolve('src')],
-        extensions: ['', '.jsx', '.js', '.tsx', '.ts']
+        extensions: ['', '.js']
     }
 }
