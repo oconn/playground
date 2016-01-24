@@ -1,5 +1,7 @@
 import path from 'path';
 import webpack from 'webpack';
+import autoprefixer from 'autoprefixer';
+import precss from 'precss';
 
 export default {
     debug: true,
@@ -11,11 +13,17 @@ export default {
             loader: 'eslint',
             include: path.join(__dirname, 'src')
         }],
-        loaders: [{
-            test: /\.js?$/,
-            loaders: ['babel'],
-            include: path.join(__dirname, 'src')
-        }]
+        loaders: [
+            {
+                test: /\.js?$/,
+                loaders: ['babel'],
+                include: path.join(__dirname, 'src')
+            },
+            {
+                test: /\.scss$/,
+                loaders: ['style', 'css', 'postcss', 'sass']
+            }
+        ]
     },
     output: {
         filename: 'app.js',
@@ -31,6 +39,9 @@ export default {
             }
         })
     ],
+    postcss: () => {
+        return [autoprefixer, precss];
+    },
     resolve: {
         root: [path.resolve('src')],
         extensions: ['', '.js']

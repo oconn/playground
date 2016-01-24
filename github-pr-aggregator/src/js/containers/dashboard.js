@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 import { initializeRepos } from '../actions/repositories';
 import { SELECTED_REPOS } from '../constants/api';
 import { map, values } from 'ramda';
-import PRViewer from '../components/pr-viewer';
+import RepositoryViewer from '../components/repository-viewer';
+import { DASHBOARD_NAME } from '../constants/api';
 
 class Dashboard extends React.Component {
 
@@ -14,14 +15,14 @@ class Dashboard extends React.Component {
 
     renderRepos() {
         return map((repo) => {
-            return <PRViewer key={repo.id} repository={repo} />;
+            return <RepositoryViewer key={repo.id} repo={repo} />;
         }, values(this.props.repositories));
     }
 
     render() {
         return (
             <div>
-                <h1>Dashboard</h1>
+                <h1>{DASHBOARD_NAME}</h1>
                 { this.renderRepos() }
             </div>
         );

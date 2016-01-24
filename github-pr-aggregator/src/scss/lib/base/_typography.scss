@@ -1,0 +1,35 @@
+h1,
+.text--mega {
+  @include responsive-text-size('mega');
+}
+
+h2,
+.text--kilo {
+  @include responsive-text-size('kilo');
+}
+
+h3,
+.text--hecto {
+  @include responsive-text-size('hecto');
+}
+
+h4,
+.text--deca {
+  @include responsive-text-size('deca');
+}
+
+h5,
+h6,
+body,
+.text--base {
+  @include responsive-text-size('base');
+}
+
+.text--deci {
+  @include responsive-text-size('deci');
+}
+
+small,
+.text--centi {
+  @include responsive-text-size('centi');
+}

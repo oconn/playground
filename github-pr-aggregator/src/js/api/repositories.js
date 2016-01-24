@@ -23,3 +23,11 @@ export const fetchAllRepositoryPRs = (url) => {
             .end(defaultTaskReturn(reject, resolve));
     });
 };
+
+export const fetchAllRepositoryIssues = (url) => {
+    return new Task((reject, resolve) => {
+        request.get(url)
+            .use(auth)
+            .end(defaultTaskReturn(reject, resolve));
+    });
+};

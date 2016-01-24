@@ -2,11 +2,12 @@ import * as actionTypes from '../actions/repositories';
 import { assoc, prop } from 'ramda';
 import { updateOrAddItemById } from '../helpers/collection';
 
-const addPrToRepo = (pr, repo) => {
-    const currentPullRequests = prop('pullRequests', repo) || [];
-    const updatedPullRequests = updateOrAddItemById(pr.id, pr, currentPullRequests);
+const updateSubcollection = (subCollectionName, subCollectionItem, parentObject) => {
+    const initialSubCollection = prop(subCollectionName, parentObject) || [];
+    const updatedSubCollection = updateOrAddItemById(
+        subCollectionItem.id, subCollectionItem, initialSubCollection);
 
-    return assoc('pullRequests', updatedPullRequests, repo);
+    return assoc(subCollectionName, updatedSubCollection, parentObject);
 };
 
 const repositoriesReducer = (state = {}, action) => {
@@ -16,7 +17,21 @@ const repositoriesReducer = (state = {}, action) => {
     case actionTypes.ADD_PULL_REQUEST_TO_REPO:
         return assoc(
             action.repoName,
-            addPrToRepo(action.pullRequest, prop(action.repoName, state)),
+            updateSubcollection(
+                'pullRequests',
+                action.pullRequest,
+                prop(action.repoName, state)
+            ),
+            state
+        );
+    case actionTypes.ADD_ISSUES_TO_REPO:
+        return assoc(
+            action.repoName,
+            updateSubcollection(
+                'issues',
+                action.issue,
+                prop(action.repoName, state)
+            ),
             state
         );
     default:
