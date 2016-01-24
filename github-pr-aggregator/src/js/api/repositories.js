@@ -15,3 +15,11 @@ export const fetchRepository = (url) => {
             .end(defaultTaskReturn(reject, resolve));
     });
 };
+
+export const fetchAllRepositoryPRs = (url) => {
+    return new Task((reject, resolve) => {
+        request.get(url)
+            .use(auth)
+            .end(defaultTaskReturn(reject, resolve));
+    });
+};

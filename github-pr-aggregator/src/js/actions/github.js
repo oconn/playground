@@ -3,8 +3,6 @@
 import formatEndpoint from '../helpers/format-endpoint';
 import { map } from 'ramda';
 
-export const ADD_ENDPOINTS = 'ADD_ENDPOINTS';
-
 /*eslint-disable */
 const root = {
     "current_user_url": "https://api.github.com/user",
@@ -40,6 +38,8 @@ const root = {
 };
 /*eslint-enable */
 
+export const ADD_ENDPOINTS = 'ADD_ENDPOINTS';
+
 export const initializeGithubAPIRoutes = () => {
     return (dispatch, getState) => {
         const update = (root) => {
@@ -50,7 +50,6 @@ export const initializeGithubAPIRoutes = () => {
         };
 
         // fetchGithubRootAPI().fork(log, update);
-
-        update(root);
+        update(root); // Mock
     };
 };
