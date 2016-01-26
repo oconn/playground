@@ -12,7 +12,7 @@ class App extends React.Component {
 
     render() {
         return length(keys(this.props.githubApi)) ? (
-            <div>
+            <div className="app-wrapper">
                 {this.props.children}
             </div>
         ) : null;

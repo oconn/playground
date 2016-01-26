@@ -6,7 +6,7 @@ import {
 import { error } from '../helpers/logging';
 import { map } from 'ramda';
 import formatGithubObject from '../helpers/format-github-object';
-import { mockIssues, mockPrs, mockRepos } from '../mocks/repositories';
+// import { mockIssues, mockPrs, mockRepos } from '../mocks/repositories';
 
 export const ADD_REPO = 'ADD_REPO';
 

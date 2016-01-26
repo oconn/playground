@@ -1,0 +1,22 @@
+.issue-container {
+    margin-left: $base-spacing;
+    padding-bottom: $base-spacing;
+    border-bottom: 1px solid black;
+
+    .issue-link {
+        .issue-name {
+            display: inline-block;
+        }
+    }
+
+    .issue-details {
+        .detail-header {
+            display: inline-block;
+        }
+    }
+
+    .label-container {
+        display: inline-block;
+        margin-left: $base-spacing;
+    }
+}

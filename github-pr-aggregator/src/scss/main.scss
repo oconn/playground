@@ -11,5 +11,10 @@
 @import './lib/base/box_sizing';
 @import './lib/base/typography';
 @import './lib/base/spacing';
+@import './lib/base/grid';
 
+@import './layouts/app';
+
+@import './components/repository';
 @import './components/label';
+@import './components/issue';

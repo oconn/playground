@@ -18,9 +18,11 @@ import moment from 'moment';
 class IssueViewer extends React.Component {
 
     renderLabels() {
-        return map((label) => {
+        const labels = map((label) => {
             return <Label key={label.name} label={label} />;
         }, this.props.issue.labels);
+
+        return <div className="label-container">{labels}</div>;
     }
 
     render() {
@@ -30,11 +32,19 @@ class IssueViewer extends React.Component {
 
         return (
             <div className="issue-container" onHover={this.showToolTip}>
-                <a href={html_url()} target="_blank">
+                <a href={html_url()}
+                   className="issue-link"
+                   target="_blank"
+                >
                     <h3 className="issue-name">{issue.title}</h3>
                 </a>
-                <h4>{` #${number}: ${user.login} | ${updatedAt}`}</h4>
-                { this.renderLabels() }
+
+                <div className="issue-details">
+                    <h4 className="detail-header">
+                        {` #${number}: ${user.login} | ${updatedAt}`}
+                    </h4>
+                    { this.renderLabels() }
+                </div>
             </div>
         );
     }

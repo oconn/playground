@@ -1,9 +1,10 @@
 import * as React from 'react';
 import IssueViewer from './issue-viewer';
 import { initializeRepositoryIssues } from '../actions/repositories';
-import { equals, filter, map, prop } from 'ramda';
+import { any, append, difference, equals, filter, length, map, prop, reduce } from 'ramda';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { MERGABLE_CRITERIA } from '../constants/api';
 
 class RepositoryViewer extends React.Component {
 
@@ -27,12 +28,51 @@ class RepositoryViewer extends React.Component {
         }, issues);
     }
 
+    matchesCriteria(issues) {
+        const matchesUserCriteria = (criteria, labels) => {
+            return equals(0, length(difference(criteria, labels)));
+        }
+
+        const isTrue = (bool) => bool === true;
+
+        return reduce((memo, issue) => {
+            const { labels } = issue;
+            const labelNames = map(prop('name'), labels);
+
+            const containsMatch = any(isTrue, map(criteria => {
+                return matchesUserCriteria(criteria, labelNames);
+            }, MERGABLE_CRITERIA));
+
+            return containsMatch ? append(issue, memo) : memo;
+        }, [], issues);
+    }
+
+    completeIssues(issues) {
+        const userSpecifiedMatches = this.matchesCriteria(issues);
+
+        // TODO Filter out merge conflicts
+        return userSpecifiedMatches;
+    }
+
     renderIssues() {
         const filteredIssues = this.filterIssues(this.props.repo.issues || []);
+        const completeIssues = this.completeIssues(filteredIssues);
+        const incompleteIssues = difference(filteredIssues, completeIssues);
 
-        return map((issue) => {
-            return <IssueViewer key={issue.id} issue={issue} />;
-        }, filteredIssues);
+        return (
+            <div className="issue-list">
+                <div className="incomplete">
+                    {map((issue) => {
+                        return <IssueViewer key={issue.id} issue={issue} />;
+                    }, incompleteIssues)}
+                </div>
+                <div className="complete">
+                    {map((issue) => {
+                        return <IssueViewer key={issue.id} issue={issue} />;
+                    }, completeIssues)}
+                </div>
+            </div>
+        );
     }
 
     render() {
