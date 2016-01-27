@@ -1,5 +1,5 @@
 const auth: Function = (req) => {
-    const token = window.localStorage.getItem('github-token');
+    const token = process.env.GITHUB_API_KEY;
 
     req.query({
         access_token: token

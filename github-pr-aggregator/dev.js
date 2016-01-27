@@ -25,7 +25,7 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'src', 'index.html'));
 });
 
-app.listen(config.port.app, 'localhost', (error) => {
+app.listen(config.port.app, '0.0.0.0', (error) => {
     if (error) return console.error(error);
     console.log(`App listening on port ${config.port.app}`);
 });

@@ -6,7 +6,7 @@ export const SELECTED_REPOS = [
     ['willowtreeapps', 'salix-css'],
     ['willowtreeapps', 'lionsgate-web']
 ];
-export const MERGABLE_CRITERIA = [
+export const MERGEABLE_CRITERIA = [
     ['cbc approved', 'lionsgate approved'],
     ['approved']
 ];

@@ -15,6 +15,14 @@ export default {
         }],
         loaders: [
             {
+                test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                loader: "url-loader?limit=10000&mimetype=application/font-woff"
+            },
+            {
+                test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                loader: "file-loader"
+            },
+            {
                 test: /\.js?$/,
                 loaders: ['babel'],
                 include: path.join(__dirname, 'src')
@@ -35,7 +43,8 @@ export default {
         new webpack.NoErrorsPlugin(),
         new webpack.DefinePlugin({
             'process.env': {
-                NODE_ENV: JSON.stringify('development')
+                NODE_ENV: JSON.stringify('development'),
+                GITHUB_API_KEY: JSON.stringify(process.env.GITHUB_API_KEY)
             }
         })
     ],

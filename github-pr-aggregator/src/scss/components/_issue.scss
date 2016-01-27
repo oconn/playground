@@ -9,9 +9,32 @@
         }
     }
 
+    .comment-count {
+        @include responsive-text-size('deci');
+
+        margin-left: 0;
+        margin-top: 11px;
+        color: white;
+        font-weight: bold;
+    }
+
     .issue-details {
         .detail-header {
             display: inline-block;
+
+            .issue-number {
+                font-weight: bold;
+                margin-right: $base-spacing;
+            }
+
+            .issue-originator {
+                font-style: italic;
+                margin-right: $base-spacing;
+            }
+
+            .updated-at {
+                @include responsive-text-size('deci');
+            }
         }
     }
 

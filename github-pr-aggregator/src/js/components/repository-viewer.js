@@ -4,7 +4,7 @@ import { initializeRepositoryIssues } from '../actions/repositories';
 import { any, append, difference, equals, filter, length, map, prop, reduce } from 'ramda';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { MERGABLE_CRITERIA } from '../constants/api';
+import { MERGEABLE_CRITERIA } from '../constants/api';
 
 class RepositoryViewer extends React.Component {
 
@@ -41,7 +41,7 @@ class RepositoryViewer extends React.Component {
 
             const containsMatch = any(isTrue, map(criteria => {
                 return matchesUserCriteria(criteria, labelNames);
-            }, MERGABLE_CRITERIA));
+            }, MERGEABLE_CRITERIA));
 
             return containsMatch ? append(issue, memo) : memo;
         }, [], issues);
