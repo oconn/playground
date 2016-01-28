@@ -1,3 +1,8 @@
 .repository-container {
     margin-left: $base-spacing;
+    margin-bottom: $base-spacing-large;
+
+    .repository-name {
+        font-weight: bold;
+    }
 }

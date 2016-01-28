@@ -1,6 +1,6 @@
 import * as React from 'react';
 import IssueViewer from './issue-viewer';
-import { initializeRepositoryIssues } from '../actions/repositories';
+import { initializeRepositoryIssues, createRepositoryWebhook } from '../actions/repositories';
 import { any, append, difference, equals, filter, length, map, prop, reduce } from 'ramda';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -10,6 +10,7 @@ class RepositoryViewer extends React.Component {
 
     componentDidMount() {
         this.props.actions.initializeRepositoryIssues(this.props.repo);
+        this.props.actions.createRepositoryWebhook(this.props.repo);
     }
 
     /**
@@ -68,7 +69,13 @@ class RepositoryViewer extends React.Component {
                 </div>
                 <div className="complete">
                     {map((issue) => {
-                        return <IssueViewer key={issue.id} issue={issue} />;
+                        return (
+                            <IssueViewer
+                                key={issue.id}
+                                issue={issue}
+                                isComplete={true}
+                            />
+                        );
                     }, completeIssues)}
                 </div>
             </div>
@@ -92,7 +99,10 @@ export default connect(
     () => {return {}},
     (dispatch) => {
         return {
-            actions: bindActionCreators({ initializeRepositoryIssues }, dispatch)
+            actions: bindActionCreators({
+                createRepositoryWebhook,
+                initializeRepositoryIssues
+            }, dispatch)
         };
     }
 )(RepositoryViewer);

@@ -1,21 +1,14 @@
-import * as React from 'react';
+import React, { PropTypes } from 'react';
 import Label from './label';
 import { map } from 'ramda';
 import moment from 'moment';
-// import tooltip from '../decorators/tooltip';
+import cx from 'classnames';
 
-// class IssueTooltip extends React.Component {
-//     render() {
-//         return (
-//             <div>
-//
-//             </div>
-//         );
-//     }
-// }
-
-// @tooltip(IssueTooltip)
 class IssueViewer extends React.Component {
+
+    static propTypes = {
+        isComplete: PropTypes.bool
+    };
 
     renderLabels() {
         const labels = map((label) => {
@@ -30,20 +23,28 @@ class IssueViewer extends React.Component {
         const { comments, user, updated_at, number, html_url } = issue;
         const updatedAt = moment(updated_at).format('MMMM Do');
 
-        console.log(issue);
-        return (
-            <div className="issue-container" onHover={this.showToolTip}>
-                <a href={html_url()}
-                   className="issue-link"
-                   target="_blank"
-                >
-                    <h3 className="issue-name">{issue.title}</h3>
-                </a>
+        const className = cx('issue-container');
 
-                <span className="fa-stack fa-lg">
-                    <i className="fa fa-comment fa-stack-1x" />
-                    <i className="comment-count fa-stack-1x">{comments}</i>
-                </span>
+        return (
+            <div className={className} onHover={this.showToolTip}>
+                <div className="issue-title-line">
+                    <a href={html_url()}
+                       className="issue-link"
+                       target="_blank"
+                    >
+                        <h3 className="issue-name">{issue.title}</h3>
+                    </a>
+
+                    <span className="fa-stack fa-lg comment-container">
+                        <i className="fa fa-comment fa-stack-1x" />
+                        <i className="comment-count fa-stack-1x">{comments}</i>
+                    </span>
+
+
+                    { this.props.isComplete && (
+                        <i className="fa fa-check completed" />
+                    )}
+                </div>
 
                 <div className="issue-details">
                     <h4 className="detail-header">

@@ -3,19 +3,29 @@
     padding-bottom: $base-spacing;
     border-bottom: 1px solid black;
 
-    .issue-link {
-        .issue-name {
-            display: inline-block;
+    .issue-title-line {
+        .issue-link {
+            .issue-name {
+                display: inline-block;
+            }
         }
-    }
 
-    .comment-count {
-        @include responsive-text-size('deci');
+        .comment-container {
+            top: -$base-spacing;
 
-        margin-left: 0;
-        margin-top: 11px;
-        color: white;
-        font-weight: bold;
+            .comment-count {
+                @include responsive-text-size('deci');
+
+                margin-left: 0;
+                margin-top: 11px;
+                color: white;
+                font-weight: bold;
+            }
+        }
+
+        .completed {
+            color: green;
+        }
     }
 
     .issue-details {

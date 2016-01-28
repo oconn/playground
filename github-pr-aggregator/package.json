@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "classnames": "^2.2.3",
     "data.task": "^3.0.0",
     "moment": "^2.11.1",
     "ramda": "~0.18.0",
