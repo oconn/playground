@@ -43,8 +43,7 @@ export default {
         new webpack.NoErrorsPlugin(),
         new webpack.DefinePlugin({
             'process.env': {
-                NODE_ENV: JSON.stringify('development'),
-                GITHUB_API_KEY: JSON.stringify(process.env.GITHUB_API_KEY)
+                NODE_ENV: JSON.stringify('development')
             }
         })
     ],

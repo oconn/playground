@@ -2,15 +2,17 @@ import * as React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { initializeRepos } from '../actions/repositories';
-import { SELECTED_REPOS } from '../constants/api';
-import { map, values } from 'ramda';
+import { length, map, prop, values } from 'ramda';
 import RepositoryViewer from '../components/repository-viewer';
-import { DASHBOARD_NAME } from '../constants/api';
 
 class Dashboard extends React.Component {
 
     componentDidMount() {
-        this.props.actions.initializeRepos(SELECTED_REPOS);
+        const repos = map(repo => {
+            return [prop('user', repo), prop('name', repo)];
+        }, this.props.config.selectedRepos);
+
+        this.props.actions.initializeRepos(repos);
     }
 
     renderRepos() {
@@ -19,11 +21,22 @@ class Dashboard extends React.Component {
         }, values(this.props.repositories));
     }
 
+    renderSetupInstructions() {
+        return (
+            <div>
+                <h2>Setup Required</h2>
+                <p>Visit the setup page and add one or more repositories to get started.</p>
+            </div>
+        );
+    }
+
     render() {
         return (
             <div>
-                <h1>{DASHBOARD_NAME}</h1>
-                { this.renderRepos() }
+                <h1>{ this.props.config.dashboardName }</h1>
+                {length(this.props.config.selectedRepos) ?
+                    this.renderRepos() :
+                    this.renderSetupInstructions()}
             </div>
         );
     }
@@ -32,6 +45,7 @@ class Dashboard extends React.Component {
 export default connect(
     (state) => {
         return {
+            config: state.config,
             repositories: state.repositories
         };
     },

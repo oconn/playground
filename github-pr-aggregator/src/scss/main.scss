@@ -6,6 +6,7 @@
 
 @import './lib/mixins/responsive';
 @import './lib/mixins/typography';
+@import './lib/mixins/form';
 
 @import './lib/vendor/fa/font-awesome';
 
@@ -14,9 +15,12 @@
 @import './lib/base/typography';
 @import './lib/base/spacing';
 @import './lib/base/grid';
+@import './lib/base/forms';
 
 @import './layouts/app';
+@import './layouts/config';
 
 @import './components/repository';
 @import './components/label';
 @import './components/issue';
+@import './components/navbar';

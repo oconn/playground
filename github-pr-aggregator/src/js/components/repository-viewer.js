@@ -1,10 +1,19 @@
 import * as React from 'react';
 import IssueViewer from './issue-viewer';
 import { initializeRepositoryIssues, createRepositoryWebhook } from '../actions/repositories';
-import { any, append, difference, equals, filter, length, map, prop, reduce } from 'ramda';
+import {
+    append,
+    difference,
+    equals,
+    filter,
+    length,
+    map,
+    prop,
+    reduce
+} from 'ramda';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { MERGEABLE_CRITERIA } from '../constants/api';
+import { getMergableCriteria } from '../helpers/repo-config';
 
 class RepositoryViewer extends React.Component {
 
@@ -34,17 +43,13 @@ class RepositoryViewer extends React.Component {
             return equals(0, length(difference(criteria, labels)));
         }
 
-        const isTrue = (bool) => bool === true;
-
         return reduce((memo, issue) => {
             const { labels } = issue;
             const labelNames = map(prop('name'), labels);
+            const criteria = getMergableCriteria(prop('full_name', this.props.repo));
 
-            const containsMatch = any(isTrue, map(criteria => {
-                return matchesUserCriteria(criteria, labelNames);
-            }, MERGEABLE_CRITERIA));
-
-            return containsMatch ? append(issue, memo) : memo;
+            return matchesUserCriteria(criteria, labelNames) ?
+                append(issue, memo) : memo;
         }, [], issues);
     }
 

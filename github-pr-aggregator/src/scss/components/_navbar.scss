@@ -1,0 +1,17 @@
+.navbar {
+    .links {
+        list-style: none;
+        border-bottom: 1px solid black;
+        margin-bottom: $base-spacing;
+
+        .nav-link {
+            display: inline-block;
+
+            a {
+                padding: $base-spacing $base-spacing-large;
+                text-decoration: none;
+                color: blue;
+            }
+        }
+    }
+}

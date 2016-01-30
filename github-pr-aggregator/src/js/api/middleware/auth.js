@@ -1,8 +1,8 @@
-const auth: Function = (req) => {
-    const token = process.env.GITHUB_API_KEY;
+import { getToken } from '../../helpers/local-storage';
 
+const auth: Function = (req) => {
     req.query({
-        access_token: token
+        access_token: getToken()
     });
 };
 

@@ -1,6 +1,6 @@
 import {
     fetchRepositories,
-    fetchRepositoryHooks,
+    // fetchRepositoryHooks,
     fetchAllRepositoryPRs,
     fetchAllRepositoryIssues
 } from '../api/repositories';
@@ -68,13 +68,13 @@ export const initializeRepositoryIssues = (repo) => {
 
 export const createRepositoryWebhook = (repo) => {
     return (dispatch, getState) => {
-        const { hooks_url } = repo;
-
-        const addHooks = (hooks) => {
-
-        };
-
         // TODO
+        // const { hooks_url } = repo;
+
+        // const addHooks = (hooks) => {
+        //
+        // };
+
         // fetchRepositoryHooks(hooks_url()).fork(error, addHooks);
     };
 }
