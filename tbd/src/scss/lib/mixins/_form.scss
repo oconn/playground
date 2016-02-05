@@ -1,0 +1,14 @@
+@mixin base-input() {
+    display: inline-block;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 0 0 14px;
+    margin: 10px auto;
+    border: 1px solid black;
+    height: 56px;
+    transition: all 0.4s ease;
+    -moz-box-sizing:border-box;
+    -webkit-box-sizing:border-box;
+    box-sizing:border-box;
+    font-size: 1em;
+}

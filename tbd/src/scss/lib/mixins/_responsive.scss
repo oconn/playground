@@ -1,0 +1,9 @@
+@mixin respond-above($breakpoint-name) {
+  $breakpoint-value: breakpoint($breakpoint-name);
+
+  @if $breakpoint-value {
+    @media screen and (min-width: $breakpoint-value) {
+      @content;
+    }
+  }
+}
