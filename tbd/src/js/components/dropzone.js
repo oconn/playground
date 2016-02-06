@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react';
 import cx from 'classnames';
-import { append, difference, filter, identity, map, merge, replace, test } from 'ramda';
-import Task from 'data.task';
+import { append, difference, filter, identity, map, replace, test } from 'ramda';
+import DropzoneThumbnail from './dropzone-thumbnail';
 
 export default class Dropzone extends React.Component {
 
@@ -11,7 +11,9 @@ export default class Dropzone extends React.Component {
         onDragEnter: PropTypes.func,
         onDragLeave: PropTypes.func,
         onDrop: PropTypes.func,
-        renderImageThumbnails: PropTypes.bool
+        renderImageThumbnails: PropTypes.bool,
+        thumbnailHeight: PropTypes.number,
+        thumbnailWidth: PropTypes.number
     };
 
     static defaultProps = {
@@ -20,7 +22,9 @@ export default class Dropzone extends React.Component {
         onDragEnter: identity,
         onDragLeave: identity,
         onDrop: identity,
-        renderImageThumbnails: true
+        renderImageThumbnails: true,
+        thumbnailHeight: 200,
+        thumbnailWidth: 200
     };
 
     constructor(props, context) {
@@ -28,8 +32,7 @@ export default class Dropzone extends React.Component {
 
         this.state = {
             supportsFileAPI: true,
-            files: [],
-            thumbnails: {}
+            files: []
         }
     }
 
@@ -53,6 +56,13 @@ export default class Dropzone extends React.Component {
         window.removeEventListener('drop', this.preventBrowserDefault);
     }
 
+    /**
+     * Prevents dropped items form opening in new window.
+     *
+     * @param {Event} e event
+     * @method preventBrowserDefault
+     * @return {undefined} undefined
+     */
     preventBrowserDefault(e) {
         e.preventDefault();
     }
@@ -161,31 +171,12 @@ export default class Dropzone extends React.Component {
     }
 
     /**
-     * Generates an image element used as a thumbnail.
+     * Renders the text preview of a file.
      *
      * @param {File} file File object
-     * @method generateThumbnail
-     * @return {Element} image element
+     * @method renderTextPreview
+     * @return {Element} element
      */
-    generateThumbnail(file) {
-        return new Task((reject, resolve) => {
-            const { FileReader } = window;
-            const reader = new FileReader();
-
-            reader.onload = e => {
-                const dataURL = e.target.result;
-
-                resolve(<img className="thumbnail" src={dataURL} />);
-            }
-
-            reader.onerror = e => {
-                reject(<div>ERROR</div>);
-            }
-
-            reader.readAsDataURL(file);
-        });
-    }
-
     renderTextPreview(file) {
         return (
             <div className="text-preview-item" key={this.generateFileSpecificKey(file)}>
@@ -194,48 +185,55 @@ export default class Dropzone extends React.Component {
         );
     }
 
+    /**
+     * Renders the thumbnail preview of an image.
+     *
+     * @param {File} file File object
+     * @method renderThumbnailPreview
+     * @return {Element} element
+     */
     renderThumbnailPreview(file) {
+        const { thumbnailHeight, thumbnailWidth } = this.props;
         const thumbnailKey = this.generateFileSpecificKey(file);
-        const ThumbnailComponent = this.state.thumbnails[thumbnailKey];
 
-        console.log(ThumbnailComponent);
-
-        if (!ThumbnailComponent) {
-            const { thumbnails } = this.state;
-
-            // this.generateThumbnail(file).fork((ErrorComponent) => {
-            //     const error = { [thumbnailKey]: ErrorComponent };
-
-            //     this.setState({ thumbnails: merge(thumbnails, error) });
-            // }, (ImageComponent) => {
-            //     const thumbnail = { [thumbnailKey]: ImageComponent };
-
-            //     this.setState({ thumbnails: merge(thumbnails, thumbnail) });
-            // });
-        }
-
-        return <ThumbnailComponent key={thumbnailKey} /> ||
-            <div className="loading" key={thumbnailKey}>Loading</div>;
+        return (
+            <DropzoneThumbnail key={thumbnailKey}
+                file={file}
+                thumbnailHeight={thumbnailHeight}
+                thumbnailWidth={thumbnailWidth}
+            />
+        );
     }
 
+    /**
+     * Renders the files stored in state.
+     *
+     * @method renderSelectedFiles
+     * @return {Element} element
+     */
     renderSelectedFiles() {
         const { renderImageThumbnails } = this.props;
         const { files } = this.state;
         const images = filter(file => test(/^image/, file.type))(files);
         const otherMedia = difference(files, images);
+        const containerStyles = {
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between'
+        };
 
         return renderImageThumbnails ? (
             <div className="preview-container">
-                <div className="thumbnail-preview-container">
+                <div className="thumbnail-preview-container" style={containerStyles}>
                     {map(file => this.renderThumbnailPreview(file), images)}
                 </div>
-                <div className="text-preview-container">
+                <div className="text-preview-container" style={containerStyles}>
                     {map(file => this.renderTextPreview(file), otherMedia)}
                 </div>
             </div>
         ) : (
             <div className="preview-container">
-                <div className="text-preview-container">
+                <div className="text-preview-container" style={containerStyles}>
                     {map(file => this.renderFilePreview(file), files)}
                 </div>
             </div>
