@@ -1,7 +1,57 @@
 div.dropzone-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     min-height: 400px;
     margin-top: $base-spacing;
     margin-bottom: $base-spacing;
     border: 1px solid black;
+
+    .thumbnail-preview-container {
+        display: flex;
+        justify-content: space-between;
+        flex-flow: row wrap;
+        padding: $base-spacing;
+        padding-bottom: 0;
+
+        .thumbnail-preview-item {
+            background: black;
+            margin-bottom: 10px;
+
+            .thumbnail-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                .thumbnail {
+                    margin: auto;
+                    padding: $base-spacing;
+                }
+            }
+
+            .loading {
+                color: white;
+            }
+
+            .remove-item-btn {
+                display: block;
+                width: 100%;
+                @include button(white, black);
+            }
+        }
+    }
+
+    .instructions {
+        margin: auto;
+        text-align: center;
+
+        .upload-btn {
+            @include button(black);
+        }
+
+        & > * {
+            margin: $base-spacing auto;
+        }
+    }
 }

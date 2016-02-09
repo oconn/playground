@@ -1,6 +1,6 @@
 import React, { PropTypes } from 'react';
 import cx from 'classnames';
-import { append, difference, filter, identity, map, replace, test } from 'ramda';
+import { append, difference, equals, filter, identity, isEmpty, map, not, replace, test } from 'ramda';
 import DropzoneThumbnail from './dropzone-thumbnail';
 
 export default class Dropzone extends React.Component {
@@ -186,6 +186,19 @@ export default class Dropzone extends React.Component {
     }
 
     /**
+     * Removes a selected file before upload.
+     *
+     * @param {Object} file File object
+     * @method removeFile
+     * @return {undefined} undefined
+     */
+    removeFile(file) {
+        const files = filter(currentFile => not(equals(file, currentFile)), this.state.files);
+
+        this.setState({ files: files });
+    }
+
+    /**
      * Renders the thumbnail preview of an image.
      *
      * @param {File} file File object
@@ -199,9 +212,23 @@ export default class Dropzone extends React.Component {
         return (
             <DropzoneThumbnail key={thumbnailKey}
                 file={file}
+                removeFile={this.removeFile.bind(this, file)}
                 thumbnailHeight={thumbnailHeight}
                 thumbnailWidth={thumbnailWidth}
             />
+        );
+    }
+
+    renderInstructions() {
+        return (
+            <div className="instructions">
+                <p>Drap and drop</p>
+
+                <button className="upload-btn"
+                    onClick={::this.onClick}>or click here</button>
+
+                <p>to upload your images.</p>
+            </div>
         );
     }
 
@@ -216,24 +243,24 @@ export default class Dropzone extends React.Component {
         const { files } = this.state;
         const images = filter(file => test(/^image/, file.type))(files);
         const otherMedia = difference(files, images);
-        const containerStyles = {
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between'
-        };
+
+        if (isEmpty(files)) {
+            return this.renderInstructions();
+        }
 
         return renderImageThumbnails ? (
             <div className="preview-container">
-                <div className="thumbnail-preview-container" style={containerStyles}>
+                <div className="thumbnail-preview-container">
                     {map(file => this.renderThumbnailPreview(file), images)}
                 </div>
-                <div className="text-preview-container" style={containerStyles}>
+
+                <div className="text-preview-container">
                     {map(file => this.renderTextPreview(file), otherMedia)}
                 </div>
             </div>
         ) : (
             <div className="preview-container">
-                <div className="text-preview-container" style={containerStyles}>
+                <div className="text-preview-container">
                     {map(file => this.renderFilePreview(file), files)}
                 </div>
             </div>
@@ -246,7 +273,6 @@ export default class Dropzone extends React.Component {
 
         return (
             <div className={className}
-                onClick={::this.onClick}
                 onDragEnter={::this.onDragEnter}
                 onDragLeave={::this.onDragLeave}
                 onDrop={::this.onDrop}

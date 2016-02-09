@@ -1,0 +1,81 @@
+// altered from http://codepen.io/awesomephant/pen/ALrsb
+
+$icons:;
+
+@mixin button($bg, $color: #DEDEDE, $rounded: false, $icon:none, $iconPosition: right){
+    padding: 1.2em 2.3em;
+    border: none;
+
+    @if lightness($bg) > 68% {
+        &:hover, &:focus {
+            background: darken($bg, 7);
+            color: darken($color, 7);
+        }
+    }
+    @else {
+        &:hover, &:focus {
+            background: darken($bg, 7);
+            color: lighten($color, 7);
+        }
+    }
+
+    @each $thing in $icons{
+        @if nth($thing, 1) == $icon {
+            @if $iconPosition == right {
+                padding-right: 3.5em;
+
+                &:after {
+                    content: nth($thing, 2);
+                    right: 1.5em;
+                }
+            }
+
+            @if $iconPosition == left {
+                padding-left: 3.5em;
+
+                &:before {
+                    content: nth($thing, 2);
+                    left: 1.5em;
+                }
+            }
+        }
+    }
+
+    color: $color;
+    display: inline-block;
+    background: $bg;
+    transition: 0.3s;
+    cursor: pointer;
+
+    font:{
+        family: sans-serif;
+        weight: 800;
+        size: .8em;
+    }
+
+    text:{
+        transform: uppercase;
+        decoration: none;
+    }
+
+    @if $rounded == true {border-radius: .7em};
+    border-bottom: .2em solid darken($bg, 7);
+    position: relative;
+
+    &:before, &:after{
+        display: inline-block;
+        font-family: entypo;
+        position: absolute;
+    }
+
+    &:active {
+        transform: scale(.92);
+    }
+
+    &:hover, &:focus {
+        @if $rounded == true {border-radius: .5em;}
+
+        box-shadow: 0 0 0 1px lighten($bg, 10);
+        outline: 0;
+    }
+}
