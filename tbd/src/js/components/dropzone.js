@@ -1,11 +1,26 @@
 import React, { PropTypes } from 'react';
 import cx from 'classnames';
-import { append, difference, equals, filter, identity, isEmpty, map, not, replace, test } from 'ramda';
+import {
+    append,
+    difference,
+    equals,
+    filter,
+    identity,
+    isEmpty,
+    map,
+    not,
+    replace,
+    test
+} from 'ramda';
 import DropzoneThumbnail from './dropzone-thumbnail';
+import request from 'superagent';
+import { forEachIndexed } from '../helpers/utils';
+import Task from 'data.task';
 
 export default class Dropzone extends React.Component {
 
     static propTypes = {
+        autoUpload: PropTypes.bool,
         multiple: PropTypes.bool,
         onClick: PropTypes.func,
         onDragEnter: PropTypes.func,
@@ -13,10 +28,13 @@ export default class Dropzone extends React.Component {
         onDrop: PropTypes.func,
         renderImageThumbnails: PropTypes.bool,
         thumbnailHeight: PropTypes.number,
-        thumbnailWidth: PropTypes.number
+        thumbnailWidth: PropTypes.number,
+        url: PropTypes.string.isRequired,
+        xhrMethod: PropTypes.oneOf(['post', 'put'])
     };
 
     static defaultProps = {
+        autoUpload: false,
         multiple: false,
         onClick: identity,
         onDragEnter: identity,
@@ -24,7 +42,8 @@ export default class Dropzone extends React.Component {
         onDrop: identity,
         renderImageThumbnails: true,
         thumbnailHeight: 200,
-        thumbnailWidth: 200
+        thumbnailWidth: 200,
+        xhrMethod: 'post'
     };
 
     constructor(props, context) {
@@ -171,21 +190,6 @@ export default class Dropzone extends React.Component {
     }
 
     /**
-     * Renders the text preview of a file.
-     *
-     * @param {File} file File object
-     * @method renderTextPreview
-     * @return {Element} element
-     */
-    renderTextPreview(file) {
-        return (
-            <div className="text-preview-item" key={this.generateFileSpecificKey(file)}>
-                <p className="filename">{file.name}</p>
-            </div>
-        );
-    }
-
-    /**
      * Removes a selected file before upload.
      *
      * @param {Object} file File object
@@ -196,6 +200,49 @@ export default class Dropzone extends React.Component {
         const files = filter(currentFile => not(equals(file, currentFile)), this.state.files);
 
         this.setState({ files: files });
+    }
+
+    uploadFiles() {
+        return new Task((reject, resolve) => {
+            const { FormData, File } = window;
+
+            const { xhrMethod, url } = this.props;
+            const { files } = this.state;
+
+            const formData = new FormData();
+
+            forEachIndexed((file, idx) => {
+                if (file instanceof File) {
+                    formData.append(idx, file, file.name);
+                }
+            }, files);
+
+            request[xhrMethod](url)
+                .send(formData)
+                .end((err, response) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(response);
+                    }
+                });
+        });
+    }
+
+    /**
+     * Renders the text preview of a file.
+     *
+     * @param {File} file File object
+     * @method renderTextPreview
+     * @return {Element} element
+     */
+    renderTextPreview(file) {
+        // TODO Merge with ThumbnailPreview or maybe not...
+        return (
+            <div className="text-preview-item" key={this.generateFileSpecificKey(file)}>
+                <p className="filename">{file.name}</p>
+            </div>
+        );
     }
 
     /**
@@ -219,17 +266,49 @@ export default class Dropzone extends React.Component {
         );
     }
 
+    /**
+     * Renders instructions for selecting files.
+     *
+     * @method renderInstructions
+     * @return {Element} element
+     */
     renderInstructions() {
         return (
             <div className="instructions">
                 <p>Drap and drop</p>
 
-                <button className="upload-btn"
+                <button className="file-select-btn"
                     onClick={::this.onClick}>or click here</button>
 
                 <p>to upload your images.</p>
             </div>
         );
+    }
+
+    /**
+     * Renders the upload button for non auto upload dropzones.
+     *
+     * @method renderUploadButton
+     * @return {Element} element
+     */
+    renderUploadButton() {
+        const { files } = this.state;
+        const { autoUpload } = this.props;
+
+        const upload = () => {
+            this.uploadFiles().fork((err) => {
+
+            }, (res) => {
+
+            });
+        }
+
+        return (not(isEmpty(files)) && not(autoUpload)) ? (
+            <button className="upload-files-btn"
+                onClick={upload}>
+                Start Upload
+            </button>
+        ) : null;
     }
 
     /**
@@ -249,7 +328,7 @@ export default class Dropzone extends React.Component {
         }
 
         return renderImageThumbnails ? (
-            <div className="preview-container">
+            <div>
                 <div className="thumbnail-preview-container">
                     {map(file => this.renderThumbnailPreview(file), images)}
                 </div>
@@ -261,7 +340,7 @@ export default class Dropzone extends React.Component {
         ) : (
             <div className="preview-container">
                 <div className="text-preview-container">
-                    {map(file => this.renderFilePreview(file), files)}
+                    {map(file => this.renderTextPreview(file), files)}
                 </div>
             </div>
         );
@@ -284,7 +363,11 @@ export default class Dropzone extends React.Component {
                     style={{ display: 'none' }}
                 />
 
-                {this.renderSelectedFiles()}
+                {this.renderUploadButton()}
+
+                <div className="preview-container">
+                    {this.renderSelectedFiles()}
+                </div>
             </div>
         );
     }

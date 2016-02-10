@@ -1,12 +1,15 @@
 div.dropzone-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: 400px;
     margin-top: $base-spacing;
     margin-bottom: $base-spacing;
     border: 1px solid black;
+
+    .preview-container {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+        min-height: 400px;
+    }
 
     .thumbnail-preview-container {
         display: flex;
@@ -46,12 +49,17 @@ div.dropzone-container {
         margin: auto;
         text-align: center;
 
-        .upload-btn {
+        .file-select-btn {
             @include button(black);
         }
 
         & > * {
             margin: $base-spacing auto;
         }
+    }
+
+    .upload-files-btn {
+        @include button(black);
+        width: 100%;
     }
 }
