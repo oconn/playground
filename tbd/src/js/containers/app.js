@@ -8,7 +8,7 @@ class App extends React.Component {
     renderDropzone() {
         return <Dropzone
             multiple={true}
-            url="/test"
+            url="http://localhost:8081/test"
             thumbnailWidth="150px"
             thumbnailHeight="150px"
         />

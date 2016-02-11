@@ -2,12 +2,19 @@ import React, { PropTypes } from 'react';
 import Task from 'data.task';
 import Loading from './loading';
 
+const uploadStates = {
+    PENDING: 'PENDING',
+    UPLOADING: 'UPLOADING',
+    UPLOAD_FAIL: 'UPLOAD_FAIL',
+    UPLOAD_SUCCESS: 'UPLOAD_SUCCESS'
+};
+
 export default class DropzoneThumbnail extends React.Component {
     static propTypes = {
         file: PropTypes.object.isRequired,
         removeFile: PropTypes.func,
-        thumbnailHeight: PropTypes.number,
-        thumbnailWidth: PropTypes.number
+        thumbnailHeight: PropTypes.string,
+        thumbnailWidth: PropTypes.string
     };
 
     static defaultProps = {
@@ -19,11 +26,19 @@ export default class DropzoneThumbnail extends React.Component {
     constructor(props, context) {
         super(props, context);
 
-        this.state = { component: <Loading className="loading"/> };
+        this.state = {
+            component: <Loading className="loading"/>,
+            uploadProgress: 0,
+            uploadState: uploadStates.PENDING
+        };
     }
 
     componentDidMount() {
         this.loadThumbnail();
+    }
+
+    getFile() {
+        return this.props.file;
     }
 
     /**

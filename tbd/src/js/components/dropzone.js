@@ -2,15 +2,14 @@ import React, { PropTypes } from 'react';
 import cx from 'classnames';
 import {
     append,
-    difference,
     equals,
     filter,
     identity,
     isEmpty,
     map,
     not,
-    replace,
-    test
+    prop,
+    replace
 } from 'ramda';
 import DropzoneThumbnail from './dropzone-thumbnail';
 import request from 'superagent';
@@ -27,8 +26,8 @@ export default class Dropzone extends React.Component {
         onDragLeave: PropTypes.func,
         onDrop: PropTypes.func,
         renderImageThumbnails: PropTypes.bool,
-        thumbnailHeight: PropTypes.number,
-        thumbnailWidth: PropTypes.number,
+        thumbnailHeight: PropTypes.string,
+        thumbnailWidth: PropTypes.string,
         url: PropTypes.string.isRequired,
         xhrMethod: PropTypes.oneOf(['post', 'put'])
     };
@@ -130,7 +129,7 @@ export default class Dropzone extends React.Component {
     onDrop(e) {
         const files = this.getFilesFromEvent(e);
 
-        this.setState({ files: files }, () => {
+        this.setState({ files: this.filesToThumbnails(files) }, () => {
             this.props.onDrop(files, e);
         });
     }
@@ -143,7 +142,9 @@ export default class Dropzone extends React.Component {
      * @return {undefined} undefined
      */
     onFilesAdded(e) {
-        this.setState({ files: this.getFilesFromEvent(e) });
+        const files = this.getFilesFromEvent(e);
+
+        this.setState({ files: this.filesToThumbnails(files) });
     }
 
     /**
@@ -176,6 +177,23 @@ export default class Dropzone extends React.Component {
         return files;
     }
 
+    filesToThumbnails(files) {
+        const { thumbnailHeight, thumbnailWidth } = this.props;
+
+        return map(file => {
+            const thumbnailKey = this.generateFileSpecificKey(file);
+
+            return (
+                <DropzoneThumbnail key={thumbnailKey}
+                    file={file}
+                    removeFile={this.removeFile.bind(this, thumbnailKey)}
+                    thumbnailHeight={thumbnailHeight}
+                    thumbnailWidth={thumbnailWidth}
+                />
+            );
+        }, files);
+    }
+
     /**
      * Generates a unique, consistant, key based on a files properties.
      *
@@ -192,32 +210,38 @@ export default class Dropzone extends React.Component {
     /**
      * Removes a selected file before upload.
      *
-     * @param {Object} file File object
+     * @param {String} thumbnailKey Thumbnail key
      * @method removeFile
      * @return {undefined} undefined
      */
-    removeFile(file) {
-        const files = filter(currentFile => not(equals(file, currentFile)), this.state.files);
+    removeFile(thumbnailKey) {
+        const files = filter(currentFile => {
+            return not(equals(thumbnailKey, prop('key', currentFile)));
+        }, this.state.files);
 
         this.setState({ files: files });
     }
 
-    uploadFiles() {
+    uploadFile(file) {
         return new Task((reject, resolve) => {
             const { FormData, File } = window;
 
             const { xhrMethod, url } = this.props;
-            const { files } = this.state;
 
             const formData = new FormData();
 
-            forEachIndexed((file, idx) => {
-                if (file instanceof File) {
-                    formData.append(idx, file, file.name);
-                }
-            }, files);
+            // const { files } = this.state;
+            //
+            // forEachIndexed((file, idx) => {
+            //     if (file instanceof File) {
+            //         formData.append(idx, file, file.name);
+            //     }
+            // }, files);
+
+            formData.append(0, file, file.name);
 
             request[xhrMethod](url)
+                .set('Access-Control-Allow-Origin', '*')
                 .send(formData)
                 .end((err, response) => {
                     if (err) {
@@ -227,43 +251,6 @@ export default class Dropzone extends React.Component {
                     }
                 });
         });
-    }
-
-    /**
-     * Renders the text preview of a file.
-     *
-     * @param {File} file File object
-     * @method renderTextPreview
-     * @return {Element} element
-     */
-    renderTextPreview(file) {
-        // TODO Merge with ThumbnailPreview or maybe not...
-        return (
-            <div className="text-preview-item" key={this.generateFileSpecificKey(file)}>
-                <p className="filename">{file.name}</p>
-            </div>
-        );
-    }
-
-    /**
-     * Renders the thumbnail preview of an image.
-     *
-     * @param {File} file File object
-     * @method renderThumbnailPreview
-     * @return {Element} element
-     */
-    renderThumbnailPreview(file) {
-        const { thumbnailHeight, thumbnailWidth } = this.props;
-        const thumbnailKey = this.generateFileSpecificKey(file);
-
-        return (
-            <DropzoneThumbnail key={thumbnailKey}
-                file={file}
-                removeFile={this.removeFile.bind(this, file)}
-                thumbnailHeight={thumbnailHeight}
-                thumbnailWidth={thumbnailWidth}
-            />
-        );
     }
 
     /**
@@ -296,10 +283,10 @@ export default class Dropzone extends React.Component {
         const { autoUpload } = this.props;
 
         const upload = () => {
-            this.uploadFiles().fork((err) => {
-
+            this.uploadFile(files[0].props.file).fork((err) => {
+                console.log(err);
             }, (res) => {
-
+                console.log(res);
             });
         }
 
@@ -318,30 +305,18 @@ export default class Dropzone extends React.Component {
      * @return {Element} element
      */
     renderSelectedFiles() {
-        const { renderImageThumbnails } = this.props;
         const { files } = this.state;
-        const images = filter(file => test(/^image/, file.type))(files);
-        const otherMedia = difference(files, images);
+        // const { renderImageThumbnails } = this.props;
+        // const images = filter(file => test(/^image/, file.type))(files);
+        // const otherMedia = difference(files, images);
 
         if (isEmpty(files)) {
             return this.renderInstructions();
         }
 
-        return renderImageThumbnails ? (
-            <div>
-                <div className="thumbnail-preview-container">
-                    {map(file => this.renderThumbnailPreview(file), images)}
-                </div>
-
-                <div className="text-preview-container">
-                    {map(file => this.renderTextPreview(file), otherMedia)}
-                </div>
-            </div>
-        ) : (
-            <div className="preview-container">
-                <div className="text-preview-container">
-                    {map(file => this.renderTextPreview(file), files)}
-                </div>
+        return (
+            <div className="thumbnail-preview-container">
+                {files}
             </div>
         );
     }
