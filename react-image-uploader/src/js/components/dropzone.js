@@ -1,26 +1,37 @@
 import React, { PropTypes } from 'react';
 import cx from 'classnames';
 import {
+    add,
     append,
     equals,
     filter,
+    head,
     identity,
     isEmpty,
     map,
     not,
+    omit,
     prop,
-    replace
+    replace,
+    subtract
 } from 'ramda';
 import DropzoneThumbnail from './dropzone-thumbnail';
 import request from 'superagent';
-import { forEachIndexed } from '../helpers/utils';
 import Task from 'data.task';
+
+const uploadStates = {
+    PENDING: 'PENDING',
+    IN_PROGRESS: 'IN_PROGRESS',
+    PAUSED: 'PAUSED',
+    COMPLETE: 'COMPLETE'
+};
 
 export default class Dropzone extends React.Component {
 
     static propTypes = {
         autoUpload: PropTypes.bool,
         multiple: PropTypes.bool,
+        numberConcurrent: PropTypes.number,
         onClick: PropTypes.func,
         onDragEnter: PropTypes.func,
         onDragLeave: PropTypes.func,
@@ -35,6 +46,7 @@ export default class Dropzone extends React.Component {
     static defaultProps = {
         autoUpload: false,
         multiple: false,
+        numberConcurrent: 3,
         onClick: identity,
         onDragEnter: identity,
         onDragLeave: identity,
@@ -49,8 +61,10 @@ export default class Dropzone extends React.Component {
         super(props);
 
         this.state = {
+            files: [],
+            numberQueued: 0,
             supportsFileAPI: true,
-            files: []
+            uploadState: uploadStates.PENDING
         }
     }
 
@@ -72,6 +86,20 @@ export default class Dropzone extends React.Component {
 
         window.removeEventListener('dragover', this.preventBrowserDefault);
         window.removeEventListener('drop', this.preventBrowserDefault);
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        const { numberQueued, uploadState } = this.state;
+        const { numberConcurrent } = this.props;
+        const { numberQueued: previousQueueCount } = prevState;
+
+        if (numberQueued < numberConcurrent && equals(uploadState, uploadStates.IN_PROGRESS)) {
+            this.uploadNext();
+        }
+
+        if (previousQueueCount > 0 && equals(numberQueued, 0) && uploadStates.IN_PROGRESS) {
+            this.setState({ uploadState: uploadStates.COMPLETE });
+        }
     }
 
     /**
@@ -159,6 +187,17 @@ export default class Dropzone extends React.Component {
     }
 
     /**
+     * Returns the react element by parsing the file and querying refs.
+     *
+     * @param {Object} file object
+     * @method getFileRef
+     * @return {Element} component
+     */
+    getFileRef(file) {
+        return this.refs[file.key];
+    }
+
+    /**
      * Iterates through a filelist provided to an event and
      * reads each file returning them in array.
      *
@@ -183,14 +222,13 @@ export default class Dropzone extends React.Component {
         return map(file => {
             const thumbnailKey = this.generateFileSpecificKey(file);
 
-            return (
-                <DropzoneThumbnail key={thumbnailKey}
-                    file={file}
-                    removeFile={this.removeFile.bind(this, thumbnailKey)}
-                    thumbnailHeight={thumbnailHeight}
-                    thumbnailWidth={thumbnailWidth}
-                />
-            );
+            return {
+                key: thumbnailKey,
+                file: file,
+                removeFile: this.removeFile.bind(this, thumbnailKey),
+                thumbnailHeight: thumbnailHeight,
+                thumbnailWidth: thumbnailWidth
+            };
         }, files);
     }
 
@@ -222,34 +260,78 @@ export default class Dropzone extends React.Component {
         this.setState({ files: files });
     }
 
+    getOnDeck() {
+        const isPending = file => {
+            const ref = this.getFileRef(file);
+
+            return (ref.getFileState() === uploadStates.PENDING);
+        };
+
+        return head(filter(isPending, this.state.files));
+    }
+
     uploadFile(file) {
         return new Task((reject, resolve) => {
-            const { FormData, File } = window;
-
+            const { FormData } = window;
             const { xhrMethod, url } = this.props;
-
             const formData = new FormData();
+            const ref = this.getFileRef(file);
 
-            // const { files } = this.state;
-            //
-            // forEachIndexed((file, idx) => {
-            //     if (file instanceof File) {
-            //         formData.append(idx, file, file.name);
-            //     }
-            // }, files);
+            formData.append(file.name, file, file.name);
 
-            formData.append(0, file, file.name);
+            const fileProgress = (event) => ref.updateProgress(event.percent);
+            const fileComplete = () => ref.markSuccess();
+            const fileError = () => ref.markFailure();
+            const fileAbort = () => ref.markCanceled();
 
             request[xhrMethod](url)
-                .set('Access-Control-Allow-Origin', '*')
                 .send(formData)
+                .on('progress', fileProgress)
                 .end((err, response) => {
                     if (err) {
                         reject(err);
                     } else {
+                        fileComplete();
                         resolve(response);
                     }
                 });
+        });
+    }
+
+    uploadComplete() {
+        this.setState({
+            numberQueued: subtract(this.state.numberQueued, 1)
+        });
+    }
+
+    reportFileError(file, error) {
+        // TODO handle error
+        this.uploadComplete()
+    }
+
+    reportFileSuccess(file, success) {
+        this.uploadComplete()
+    }
+
+    uploadNext() {
+        const { numberQueued } = this.state;
+        const file = this.getOnDeck();
+
+        if (not(file)) {
+            return null;
+        }
+
+        const ref = this.getFileRef(file);
+
+        ref.startUpload();
+
+        this.setState({
+            numberQueued: add(numberQueued, 1)
+        }, () => {
+            this.uploadFile(file).fork(
+                this.reportFileError.bind(this, file),
+                this.reportFileSuccess.bind(this, file)
+            );
         });
     }
 
@@ -273,27 +355,51 @@ export default class Dropzone extends React.Component {
     }
 
     /**
+     * Starts the upload process
+     *
+     * @method startUpload
+     * @return {undefined} undefined
+     */
+    startUpload() {
+        this.setState({ uploadState: uploadStates.IN_PROGRESS });
+    }
+
+    /**
+     * Pauses the upload process
+     *
+     * @method pauseUpload
+     * @return {undefined} undefined
+     */
+    pauseUpload() {
+        this.setState({ uploadState: uploadStates.PAUSED });
+    }
+
+    /**
+     * Marks the upload process as complete
+     *
+     * @method completeUpload
+     * @return {undefined} undefined
+     */
+    completeUpload() {
+        this.setState({ uploadState: uploadStates.COMPLETE });
+    }
+
+    /**
      * Renders the upload button for non auto upload dropzones.
      *
      * @method renderUploadButton
      * @return {Element} element
      */
     renderUploadButton() {
-        const { files } = this.state;
         const { autoUpload } = this.props;
-
-        const upload = () => {
-            this.uploadFile(files[0].props.file).fork((err) => {
-                console.log(err);
-            }, (res) => {
-                console.log(res);
-            });
-        }
+        const { files, uploadState } = this.state;
+        const uploadInProgress = uploadState === uploadStates.UPLOADING;
 
         return (not(isEmpty(files)) && not(autoUpload)) ? (
             <button className="upload-files-btn"
-                onClick={upload}>
-                Start Upload
+                onClick={::this.startUpload}
+                disabled={uploadInProgress}>
+                {uploadInProgress ? 'Uploading' : 'Start Upload'}
             </button>
         ) : null;
     }
@@ -305,18 +411,28 @@ export default class Dropzone extends React.Component {
      * @return {Element} element
      */
     renderSelectedFiles() {
+        const { uploadState } = this.state;
         const { files } = this.state;
-        // const { renderImageThumbnails } = this.props;
-        // const images = filter(file => test(/^image/, file.type))(files);
-        // const otherMedia = difference(files, images);
 
         if (isEmpty(files)) {
             return this.renderInstructions();
         }
 
         return (
+
             <div className="thumbnail-preview-container">
-                {files}
+                {map(file => {
+                    const props = omit(['key'], file);
+
+                    return (
+                        <DropzoneThumbnail
+                            key={file.key}
+                            ref={file.key}
+                            uploadInProgress={uploadState === uploadStates.IN_PROGRESS}
+                            {...props}
+                        />
+                    );
+                }, files)}
             </div>
         );
     }
