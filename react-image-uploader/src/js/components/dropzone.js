@@ -26,6 +26,13 @@ const uploadStates = {
     COMPLETE: 'COMPLETE'
 };
 
+const initialState = {
+    files: [],
+    numberQueued: 0,
+    supportsFileAPI: true,
+    uploadState: uploadStates.PENDING
+};
+
 export default class Dropzone extends React.Component {
 
     static propTypes = {
@@ -60,12 +67,7 @@ export default class Dropzone extends React.Component {
     constructor(props, context) {
         super(props);
 
-        this.state = {
-            files: [],
-            numberQueued: 0,
-            supportsFileAPI: true,
-            uploadState: uploadStates.PENDING
-        }
+        this.state = initialState;
     }
 
     componentDidMount() {
@@ -384,6 +386,10 @@ export default class Dropzone extends React.Component {
         this.setState({ uploadState: uploadStates.COMPLETE });
     }
 
+    reset() {
+        this.setState(initialState);
+    }
+
     /**
      * Renders the upload button for non auto upload dropzones.
      *
@@ -393,7 +399,16 @@ export default class Dropzone extends React.Component {
     renderUploadButton() {
         const { autoUpload } = this.props;
         const { files, uploadState } = this.state;
-        const uploadInProgress = uploadState === uploadStates.UPLOADING;
+        const uploadInProgress = uploadState === uploadStates.IN_PROGRESS;
+
+        if (uploadState === uploadStates.COMPLETE) {
+            return (
+                <button className="upload-files-btn"
+                    onClick={::this.reset}>
+                    Reset Uploader
+                </button>
+            );
+        }
 
         return (not(isEmpty(files)) && not(autoUpload)) ? (
             <button className="upload-files-btn"
