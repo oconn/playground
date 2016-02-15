@@ -1,6 +1,7 @@
 import React, { PropTypes } from 'react';
 import Task from 'data.task';
 import Loading from './loading';
+import { contains, test } from 'ramda';
 
 const uploadStates = {
     PENDING: 'PENDING',
@@ -44,6 +45,17 @@ export default class DropzoneThumbnail extends React.Component {
         return this.state.uploadState;
     }
 
+    hasUploaded() {
+        const { uploadState } = this.state;
+        const completedStates = [
+            uploadStates.UPLOAD_CANCELED,
+            uploadStates.UPLOAD_SUCCESS,
+            uploadStates.UPLOAD_FAIL
+        ];
+
+        return contains(uploadState, completedStates);
+    }
+
     updateProgress(percent) {
         this.setState({
             uploadProgress: percent
@@ -80,7 +92,7 @@ export default class DropzoneThumbnail extends React.Component {
      * @return {undefined} undefined
      */
     loadThumbnail() {
-        this.generateThumbnail(this.props.file).fork((ErrorComponent) => {
+        this.generateThumbnail(this.props.file).fork((error) => {
             this.setState({
                 component: <div>Error</div>
             });
@@ -99,20 +111,30 @@ export default class DropzoneThumbnail extends React.Component {
      * @return {Task} task
      */
     generateThumbnail(file) {
+        const { FileReader } = window;
+        const reader = new FileReader();
+
         return new Task((reject, resolve) => {
-            const { FileReader } = window;
-            const reader = new FileReader();
+            if (this.isImage(file)) {
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = e => reject();
 
-            reader.onload = e => {
-                resolve(e.target.result);
+                reader.readAsDataURL(file);
+            } else {
+                resolve();
             }
-
-            reader.onerror = e => {
-                reject();
-            }
-
-            reader.readAsDataURL(file);
         });
+    }
+
+    /**
+     * Tests if a file is of type image.
+     *
+     * @param {File} file file object
+     * @method isImage
+     * @return {Boolean}
+     */
+    isImage(file) {
+        return test(/^image\//, file.type);
     }
 
     renderInfo() {

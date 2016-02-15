@@ -12,6 +12,7 @@ import {
     not,
     omit,
     prop,
+    reduce,
     replace,
     subtract
 } from 'ramda';
@@ -93,15 +94,22 @@ export default class Dropzone extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         const { numberQueued, uploadState } = this.state;
         const { numberConcurrent } = this.props;
-        const { numberQueued: previousQueueCount } = prevState;
 
         if (numberQueued < numberConcurrent && equals(uploadState, uploadStates.IN_PROGRESS)) {
             this.uploadNext();
         }
 
-        if (previousQueueCount > 0 && equals(numberQueued, 0) && uploadStates.IN_PROGRESS) {
+        if (this.allUploadsComplete()) {
             this.setState({ uploadState: uploadStates.COMPLETE });
         }
+    }
+
+    allUploadsComplete() {
+        return reduce((memo, file) => {
+            const ref = this.getFileRef(file);
+
+            return ref.hasUploaded() ? memo : false;
+        }, true, this.state.files);
     }
 
     /**
@@ -218,6 +226,11 @@ export default class Dropzone extends React.Component {
         return files;
     }
 
+    /**
+     * @param {Array} files FileList
+     * @method filesToThumbnails
+     * @return {Array} Thumbnail Props
+     */
     filesToThumbnails(files) {
         const { thumbnailHeight, thumbnailWidth } = this.props;
 
@@ -272,12 +285,14 @@ export default class Dropzone extends React.Component {
         return head(filter(isPending, this.state.files));
     }
 
-    uploadFile(file) {
+    uploadFile(fileParams) {
         return new Task((reject, resolve) => {
             const { FormData } = window;
             const { xhrMethod, url } = this.props;
+            const { file } = fileParams;
+
             const formData = new FormData();
-            const ref = this.getFileRef(file);
+            const ref = this.getFileRef(fileParams);
 
             formData.append(file.name, file, file.name);
 
