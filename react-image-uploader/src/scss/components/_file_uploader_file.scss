@@ -1,0 +1,30 @@
+.file-container {
+    display: flex;
+    flex-basis: 50%;
+    margin-bottom: $base-spacing;
+
+    .thumbnail-container {
+        display: flex;
+        flex-basis: 30%;
+        justify-content: center;
+        align-items: center;
+        background: black;
+        padding: $base-spacing;
+
+        .loading {
+            color: white;
+        }
+    }
+
+    .file-information {
+        flex-basis: 70%;
+
+        .file-details {
+
+        }
+
+        .progress-bar-container {
+
+        }
+    }
+}

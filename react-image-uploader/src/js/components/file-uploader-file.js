@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react';
 import Task from 'data.task';
 import Loading from './loading';
-import { contains, test } from 'ramda';
+import { contains, divide, multiply, test} from 'ramda';
 
 const uploadStates = {
     PENDING: 'PENDING',
@@ -11,7 +11,7 @@ const uploadStates = {
     UPLOAD_SUCCESS: 'UPLOAD_SUCCESS'
 };
 
-export default class DropzoneThumbnail extends React.Component {
+export default class FileUploaderFile extends React.Component {
     static propTypes = {
         file: PropTypes.object.isRequired,
         removeFile: PropTypes.func,
@@ -178,6 +178,38 @@ export default class DropzoneThumbnail extends React.Component {
         );
     }
 
+    renderFileDetails() {
+        const {name, size, type} = this.props.file;
+
+        const toMB = (bytes) => {
+            const bytesInKB = 1024;
+            const bytesInMB = multiply(bytesInKB, bytesInKB);
+
+            return divide(bytes, bytesInMB);
+        };
+
+        return (
+            <div className="file-detials">
+                <h3 className="file-name">{name}</h3>
+                <p className="file-type">{type}</p>
+                <p className="file-size">{toMB(size).toFixed(2)}MB</p>
+            </div>
+        );
+    }
+
+    renderProgressIndicator() {
+        const width = { width: `${this.state.uploadProgress}%` };
+
+        return (
+            <div className="progress-bar-container">
+                <div style={ width }
+                    className="progress-bar-percent">
+                    <i className="fa fa-check done" />
+                </div>
+            </div>
+        );
+    }
+
     render() {
         const { thumbnailHeight, thumbnailWidth } = this.props;
 
@@ -187,12 +219,17 @@ export default class DropzoneThumbnail extends React.Component {
         }
 
         return (
-            <div className="thumbnail-preview-item">
+            <div className="file-container">
                 <div className="thumbnail-container" style={styles}>
                     {this.state.component}
                 </div>
 
-                {this.renderInfo()}
+                <div className="file-information">
+                    {this.renderFileDetails()}
+                    {this.renderProgressIndicator()}
+                </div>
+
+                {/*this.renderInfo()*/}
             </div>
         );
     }

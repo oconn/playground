@@ -1,12 +1,12 @@
 import React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import Dropzone from '../components/dropzone';
+import FileUploader from '../components/file-uploader';
 
 class App extends React.Component {
 
     renderDropzone() {
-        return <Dropzone
+        return <FileUploader
             multiple={true}
             url="http://localhost:8081/test"
             thumbnailWidth="150px"

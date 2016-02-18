@@ -1,0 +1,31 @@
+.file-uploader-container {
+    margin-top: $base-spacing;
+    margin-bottom: $base-spacing;
+    border: 1px solid black;
+
+    .preview-container {
+        display: flex;
+        flex-wrap: wrap;
+
+        width: 100%;
+        min-height: 400px;
+    }
+
+    .instructions {
+        margin: auto;
+        text-align: center;
+
+        .file-select-btn {
+            @include button(black);
+        }
+
+        & > * {
+            margin: $base-spacing auto;
+        }
+    }
+
+    .upload-files-btn {
+        @include button(black);
+        width: 100%;
+    }
+}

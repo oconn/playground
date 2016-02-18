@@ -16,7 +16,7 @@ import {
     replace,
     subtract
 } from 'ramda';
-import DropzoneThumbnail from './dropzone-thumbnail';
+import FileUploaderFile from './file-uploader-file';
 import request from 'superagent';
 import Task from 'data.task';
 
@@ -34,7 +34,7 @@ const initialState = {
     uploadState: uploadStates.PENDING
 };
 
-export default class Dropzone extends React.Component {
+export default class FileUploader extends React.Component {
 
     static propTypes = {
         autoUpload: PropTypes.bool,
@@ -448,28 +448,23 @@ export default class Dropzone extends React.Component {
             return this.renderInstructions();
         }
 
-        return (
+        return map(file => {
+            const props = omit(['key'], file);
 
-            <div className="thumbnail-preview-container">
-                {map(file => {
-                    const props = omit(['key'], file);
-
-                    return (
-                        <DropzoneThumbnail
-                            key={file.key}
-                            ref={file.key}
-                            uploadInProgress={uploadState === uploadStates.IN_PROGRESS}
-                            {...props}
-                        />
-                    );
-                }, files)}
-            </div>
-        );
+            return (
+                <FileUploaderFile
+                    key={file.key}
+                    ref={file.key}
+                    uploadInProgress={uploadState === uploadStates.IN_PROGRESS}
+                    {...props}
+                />
+            );
+        }, files);
     }
 
     render() {
         const { multiple } = this.props;
-        const className = cx('dropzone-container', this.props.className);
+        const className = cx('file-uploader-container', this.props.className);
 
         return (
             <div className={className}
