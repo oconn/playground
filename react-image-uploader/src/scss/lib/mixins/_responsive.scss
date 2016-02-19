@@ -7,3 +7,13 @@
     }
   }
 }
+
+@mixin respond-below($breakpoint-name) {
+  $breakpoint-value: breakpoint($breakpoint-name);
+
+  @if $breakpoint-value {
+    @media screen and (max-width: $breakpoint-value) {
+      @content;
+    }
+  }
+}

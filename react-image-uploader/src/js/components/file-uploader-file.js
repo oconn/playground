@@ -189,7 +189,7 @@ export default class FileUploaderFile extends React.Component {
         };
 
         return (
-            <div className="file-detials">
+            <div className="file-details">
                 <h3 className="file-name">{name}</h3>
                 <p className="file-type">{type}</p>
                 <p className="file-size">{toMB(size).toFixed(2)}MB</p>
@@ -198,13 +198,15 @@ export default class FileUploaderFile extends React.Component {
     }
 
     renderProgressIndicator() {
-        const width = { width: `${this.state.uploadProgress}%` };
+        const { uploadProgress, uploadState } = this.state;
+        const width = { width: `${uploadProgress}%` };
+        const done = uploadState === uploadStates.UPLOAD_SUCCESS
 
         return (
             <div className="progress-bar-container">
                 <div style={ width }
                     className="progress-bar-percent">
-                    <i className="fa fa-check done" />
+                    { done ? <i className="fa fa-check done" /> : null }
                 </div>
             </div>
         );
@@ -214,13 +216,13 @@ export default class FileUploaderFile extends React.Component {
         const { thumbnailHeight, thumbnailWidth } = this.props;
 
         const styles = {
-            height: thumbnailHeight,
-            width: thumbnailWidth
+            maxHeight: thumbnailHeight,
+            maxWidth: thumbnailWidth
         }
 
         return (
             <div className="file-container">
-                <div className="thumbnail-container" style={styles}>
+                <div className="thumbnail-container">
                     {this.state.component}
                 </div>
 
